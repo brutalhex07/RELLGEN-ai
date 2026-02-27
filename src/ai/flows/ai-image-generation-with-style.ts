@@ -42,42 +42,37 @@ const aiImageGenerationWithStyleFlow = ai.defineFlow(
   async (input) => {
     const combinedPrompt = `Generate a high-quality ${input.style.toLowerCase()} style image based on this description: ${input.prompt}. Ensure the artistic style is clearly reflected.`;
 
-    try {
-      const {media} = await ai.generate({
-        model: 'googleai/imagen-3',
-        prompt: combinedPrompt,
-        config: {
-          safetySettings: [
-            {
-              category: 'HARM_CATEGORY_HATE_SPEECH',
-              threshold: 'BLOCK_ONLY_HIGH',
-            },
-            {
-              category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-              threshold: 'BLOCK_ONLY_HIGH',
-            },
-            {
-              category: 'HARM_CATEGORY_HARASSMENT',
-              threshold: 'BLOCK_ONLY_HIGH',
-            },
-            {
-              category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-              threshold: 'BLOCK_ONLY_HIGH',
-            },
-          ],
-        },
-      });
+    const {media} = await ai.generate({
+      model: 'googleai/imagen-4.0-fast-generate-001',
+      prompt: combinedPrompt,
+      config: {
+        safetySettings: [
+          {
+            category: 'HARM_CATEGORY_HATE_SPEECH',
+            threshold: 'BLOCK_ONLY_HIGH',
+          },
+          {
+            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+            threshold: 'BLOCK_ONLY_HIGH',
+          },
+          {
+            category: 'HARM_CATEGORY_HARASSMENT',
+            threshold: 'BLOCK_ONLY_HIGH',
+          },
+          {
+            category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+            threshold: 'BLOCK_ONLY_HIGH',
+          },
+        ],
+      },
+    });
 
-      if (!media || !media.url) {
-        throw new Error('The image generation model did not return a valid result. This could be due to safety filters or service availability.');
-      }
-
-      return {
-        imageUrl: media.url,
-      };
-    } catch (error: any) {
-      console.error("Genkit Image Generation Error:", error);
-      throw new Error(error.message || "Failed to generate image.");
+    if (!media || !media.url) {
+      throw new Error('The image generation model did not return a valid result. This could be due to safety filters or service availability.');
     }
+
+    return {
+      imageUrl: media.url,
+    };
   }
 );
