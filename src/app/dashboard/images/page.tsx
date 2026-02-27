@@ -7,7 +7,8 @@ import {
   ImageIcon, 
   Loader2, 
   Trash2, 
-  Maximize2
+  Maximize2,
+  AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ import {
 import { aiImageGenerationWithStyle } from "@/ai/flows/ai-image-generation-with-style";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type GeneratedImage = {
   id: string;
@@ -54,7 +56,7 @@ export default function ImageGenPage() {
       setHistory(prev => [newImage, ...prev]);
       toast({ 
         title: "Success", 
-        description: "Your masterpiece is ready!" 
+        description: "Your image has been generated!" 
       });
     } catch (error: any) {
       console.error("Generation error:", error);
@@ -82,7 +84,7 @@ export default function ImageGenPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold font-headline tracking-tight">AI Image Studio</h1>
-          <p className="text-muted-foreground">Turn your ideas into stunning visuals with Gemini Imagen.</p>
+          <p className="text-muted-foreground">Turn your ideas into stunning visuals with Google Imagen.</p>
         </div>
       </div>
 
@@ -154,9 +156,10 @@ export default function ImageGenPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading && (
             <Card className="glass animate-pulse border-white/10 overflow-hidden aspect-square flex items-center justify-center">
-              <div className="text-center">
+              <div className="text-center p-4">
                 <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary mb-2" />
                 <span className="text-sm text-muted-foreground">Creating masterpiece...</span>
+                <p className="text-[10px] text-muted-foreground mt-2">This usually takes 10-20 seconds</p>
               </div>
             </Card>
           )}
