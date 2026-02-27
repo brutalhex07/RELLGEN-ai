@@ -1,4 +1,3 @@
-
 "use client";
 
 import { 
@@ -15,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 const mockHistory = [
   { id: 1, type: 'chat', title: 'Creative Story Writing', date: '2024-03-24', time: '14:30', tokens: 450 },
