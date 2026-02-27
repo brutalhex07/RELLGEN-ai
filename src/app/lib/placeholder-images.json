@@ -1,0 +1,23 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "hero-image",
+      "description": "A sleek, futuristic AI brain visualization with glowing neurons and purple/blue light trails.",
+      "imageUrl": "https://picsum.photos/seed/ai-studio-hero/1200/800",
+      "imageHint": "artificial intelligence brain"
+    },
+    {
+      "id": "feature-chat",
+      "description": "A clean, modern chat interface showing a conversation between a human and an AI assistant.",
+      "imageUrl": "https://picsum.photos/seed/chat-feature/800/600",
+      "imageHint": "chat application interface"
+    },
+    {
+      "id": "feature-image-gen",
+      "description": "A creative workspace showing various AI-generated artistic images being curated.",
+      "imageUrl": "https://picsum.photos/seed/image-gen-feature/800/600",
+      "imageHint": "digital art generation"
+    }
+  ]
+}
