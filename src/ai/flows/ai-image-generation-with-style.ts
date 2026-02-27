@@ -40,62 +40,63 @@ const aiImageGenerationWithStyleFlow = ai.defineFlow(
     outputSchema: AiImageGenerationWithStyleOutputSchema,
   },
   async (input) => {
-    const combinedPrompt = `Generate a high-quality ${input.style.toLowerCase()} style image based on this description: ${input.prompt}. Ensure the artistic style is clearly reflected.`;
+    const combinedPrompt = `Generate a high-quality ${input.style.toLowerCase()} style image: ${input.prompt}. Ensure the artistic style is clearly reflected.`;
 
-    try {
-      // Use the stable Imagen 3.0 model for high-quality text-to-image generation
-      const result = await ai.generate({
-        model: 'googleai/imagen-3.0-generate-001',
-        prompt: combinedPrompt,
-        config: {
-          safetySettings: [
-            {
-              category: 'HARM_CATEGORY_HATE_SPEECH',
-              threshold: 'BLOCK_ONLY_HIGH',
-            },
-            {
-              category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-              threshold: 'BLOCK_ONLY_HIGH',
-            },
-            {
-              category: 'HARM_CATEGORY_HARASSMENT',
-              threshold: 'BLOCK_ONLY_HIGH',
-            },
-            {
-              category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-              threshold: 'BLOCK_ONLY_HIGH',
-            },
-          ],
-        },
-      });
+    // Priority list of model identifiers to try
+    const modelIds = [
+      'googleai/imagen-3.0-generate-001',
+      'googleai/imagen-3.0-fast-generate-001',
+      'googleai/imagen-3',
+    ];
 
-      if (result.media && result.media.url) {
-        return { imageUrl: result.media.url };
+    let lastErrorMessage = '';
+
+    for (const modelId of modelIds) {
+      try {
+        const result = await ai.generate({
+          model: modelId,
+          prompt: combinedPrompt,
+          config: {
+            safetySettings: [
+              {
+                category: 'HARM_CATEGORY_HATE_SPEECH',
+                threshold: 'BLOCK_NONE',
+              },
+              {
+                category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+                threshold: 'BLOCK_NONE',
+              },
+              {
+                category: 'HARM_CATEGORY_HARASSMENT',
+                threshold: 'BLOCK_NONE',
+              },
+              {
+                category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+                threshold: 'BLOCK_NONE',
+              },
+            ],
+          },
+        });
+
+        if (result.media && result.media.url) {
+          return { imageUrl: result.media.url };
+        }
+      } catch (error: any) {
+        lastErrorMessage = error.message;
+        // If the error indicates the model is not found or available, try the next one
+        if (
+          error.message.includes('404') || 
+          error.message.includes('not found') || 
+          error.message.includes('not available') ||
+          error.message.includes('INVALID_ARGUMENT')
+        ) {
+          continue;
+        }
+        // If it's a different error, we'll still try the next model just in case
+        continue;
       }
-
-      // Fallback attempt with the "Fast" variant
-      const fallback = await ai.generate({
-        model: 'googleai/imagen-3.0-fast-generate-001',
-        prompt: combinedPrompt,
-      });
-
-      if (fallback.media && fallback.media.url) {
-        return { imageUrl: fallback.media.url };
-      }
-
-      throw new Error('The AI model processed the request but did not return an image. This can happen due to strict safety filters or temporary service limits.');
-    } catch (error: any) {
-      console.error('Image Generation Flow Error:', error);
-      
-      // Provide more helpful user-facing errors based on common API responses
-      let userMessage = error.message || 'An unexpected error occurred.';
-      if (userMessage.includes('404')) {
-        userMessage = 'The requested image model is not available in your region. Our team is working on more fallbacks.';
-      } else if (userMessage.includes('INVALID_ARGUMENT')) {
-        userMessage = 'The request parameters were invalid for the selected model. Retrying with a simpler configuration.';
-      }
-
-      throw new Error(`Generation failed: ${userMessage}`);
     }
+
+    throw new Error(`Image generation failed across all available models. Last error: ${lastErrorMessage}`);
   }
 );
