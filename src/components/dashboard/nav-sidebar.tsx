@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -11,8 +10,7 @@ import {
   CreditCard, 
   Settings, 
   LogOut,
-  LayoutDashboard,
-  User,
+  LayoutGrid,
   PlusCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,9 +18,9 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
-  { icon: MessageSquare, label: "AI Chat", href: "/dashboard/chat" },
-  { icon: ImageIcon, label: "Image Gen", href: "/dashboard/images" },
+  { icon: MessageSquare, label: "New Chat", href: "/dashboard/chat" },
+  { icon: ImageIcon, label: "Image Generator", href: "/dashboard/images" },
+  { icon: LayoutGrid, label: "Templates", href: "/dashboard/templates" },
   { icon: History, label: "History", href: "/dashboard/history" },
   { icon: CreditCard, label: "Pricing", href: "/dashboard/pricing" },
   { icon: Settings, label: "Settings", href: "/dashboard/settings" },
@@ -44,7 +42,7 @@ export function NavSidebar() {
         <Link href="/dashboard/chat">
           <Button className="w-full justify-start gap-2 mb-8 bg-primary hover:bg-primary/90 text-primary-foreground" variant="default">
             <PlusCircle className="h-4 w-4" />
-            New Chat
+            Start Fresh
           </Button>
         </Link>
 
