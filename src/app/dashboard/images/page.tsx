@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Sparkles, 
   Download, 
@@ -8,7 +9,7 @@ import {
   Loader2, 
   Trash2, 
   Maximize2,
-  AlertCircle
+  Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,6 @@ import {
 import { aiImageGenerationWithStyle } from "@/ai/flows/ai-image-generation-with-style";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type GeneratedImage = {
   id: string;
@@ -40,16 +40,29 @@ export default function ImageGenPage() {
   const [history, setHistory] = useState<GeneratedImage[]>([]);
   const { toast } = useToast();
 
-  const handleGenerate = async () => {
-    if (!prompt.trim() || loading) return;
+  // Add a sample image for visual testing on mount
+  useEffect(() => {
+    const testImage: GeneratedImage = {
+      id: "test-123",
+      url: "https://picsum.photos/seed/ai-test/800/800",
+      prompt: "Sample Test: A futuristic laboratory with holographic displays",
+      style: "Cinematic",
+      timestamp: new Date()
+    };
+    setHistory([testImage]);
+  }, []);
+
+  const handleGenerate = async (customPrompt?: string) => {
+    const finalPrompt = customPrompt || prompt;
+    if (!finalPrompt.trim() || loading) return;
 
     setLoading(true);
     try {
-      const result = await aiImageGenerationWithStyle({ prompt, style });
+      const result = await aiImageGenerationWithStyle({ prompt: finalPrompt, style });
       const newImage: GeneratedImage = {
         id: Math.random().toString(36).substr(2, 9),
         url: result.imageUrl,
-        prompt,
+        prompt: finalPrompt,
         style,
         timestamp: new Date()
       };
@@ -59,7 +72,6 @@ export default function ImageGenPage() {
         description: "Your image has been generated!" 
       });
     } catch (error: any) {
-      console.error("Generation error:", error);
       toast({
         title: "Generation Failed",
         description: error.message || "Something went wrong while creating your image.",
@@ -68,6 +80,13 @@ export default function ImageGenPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const runQuickTest = () => {
+    const testPrompt = "A cute small robot holding a neon sign that says 'IT WORKS'";
+    setPrompt(testPrompt);
+    setStyle("3D Render");
+    handleGenerate(testPrompt);
   };
 
   const handleDownload = (imageUrl: string, fileName: string) => {
@@ -86,6 +105,15 @@ export default function ImageGenPage() {
           <h1 className="text-3xl font-bold font-headline tracking-tight">AI Image Studio</h1>
           <p className="text-muted-foreground">Turn your ideas into stunning visuals with Google Imagen.</p>
         </div>
+        <Button 
+          variant="outline" 
+          className="border-primary/20 bg-primary/5 hover:bg-primary/10 gap-2"
+          onClick={runQuickTest}
+          disabled={loading}
+        >
+          <Zap className="h-4 w-4 text-primary" />
+          Quick Test
+        </Button>
       </div>
 
       <Card className="glass border-white/10 overflow-hidden">
@@ -124,7 +152,7 @@ export default function ImageGenPage() {
             <Button 
               size="lg" 
               className="bg-primary hover:bg-primary/90 h-12 px-8 gap-2"
-              onClick={handleGenerate}
+              onClick={() => handleGenerate()}
               disabled={loading || !prompt.trim()}
             >
               {loading ? (
@@ -146,13 +174,6 @@ export default function ImageGenPage() {
       <div className="space-y-6">
         <h2 className="text-xl font-bold">Your Generations</h2>
         
-        {history.length === 0 && !loading && (
-          <div className="flex flex-col items-center justify-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
-            <ImageIcon className="h-16 w-16 text-muted-foreground/30 mb-4" />
-            <p className="text-muted-foreground">No images generated yet. Start creating!</p>
-          </div>
-        )}
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading && (
             <Card className="glass animate-pulse border-white/10 overflow-hidden aspect-square flex items-center justify-center">
