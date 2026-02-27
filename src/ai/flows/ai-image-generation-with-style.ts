@@ -9,7 +9,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import {googleAI} from '@genkit-ai/google-genai';
 
 const AiImageGenerationWithStyleInputSchema = z.object({
   prompt: z.string().describe('A detailed text description of the image to generate.'),
@@ -44,12 +43,32 @@ const aiImageGenerationWithStyleFlow = ai.defineFlow(
     const combinedPrompt = `Generate a ${input.style.toLowerCase()} image of: ${input.prompt}`;
 
     const {media} = await ai.generate({
-      model: googleAI.model('imagen-4.0-fast-generate-001'), // Using Imagen 4 for text-to-image
+      model: 'googleai/imagen-4.0-fast-generate-001',
       prompt: combinedPrompt,
+      config: {
+        safetySettings: [
+          {
+            category: 'HARM_CATEGORY_HATE_SPEECH',
+            threshold: 'BLOCK_ONLY_HIGH',
+          },
+          {
+            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+            threshold: 'BLOCK_ONLY_HIGH',
+          },
+          {
+            category: 'HARM_CATEGORY_HARASSMENT',
+            threshold: 'BLOCK_ONLY_HIGH',
+          },
+          {
+            category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+            threshold: 'BLOCK_ONLY_HIGH',
+          },
+        ],
+      },
     });
 
     if (!media || !media.url) {
-      throw new Error('Failed to generate image or image URL is missing.');
+      throw new Error('Failed to generate image. The model did not return a valid image URL.');
     }
 
     return {

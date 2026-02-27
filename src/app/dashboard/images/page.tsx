@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -8,8 +7,7 @@ import {
   ImageIcon, 
   Loader2, 
   Trash2, 
-  Maximize2,
-  Share2
+  Maximize2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +20,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { aiImageGenerationWithStyle } from "@/ai/flows/ai-image-generation-with-style";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 
 type GeneratedImage = {
@@ -38,6 +36,7 @@ export default function ImageGenPage() {
   const [style, setStyle] = useState("Realistic");
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<GeneratedImage[]>([]);
+  const { toast } = useToast();
 
   const handleGenerate = async () => {
     if (!prompt.trim() || loading) return;
@@ -53,11 +52,15 @@ export default function ImageGenPage() {
         timestamp: new Date()
       };
       setHistory(prev => [newImage, ...prev]);
-      toast({ title: "Success", description: "Image generated successfully!" });
-    } catch (error) {
+      toast({ 
+        title: "Success", 
+        description: "Your masterpiece is ready!" 
+      });
+    } catch (error: any) {
+      console.error("Generation error:", error);
       toast({
         title: "Generation Failed",
-        description: "Something went wrong while creating your image.",
+        description: error.message || "Something went wrong while creating your image.",
         variant: "destructive",
       });
     } finally {
@@ -68,7 +71,7 @@ export default function ImageGenPage() {
   const handleDownload = (imageUrl: string, fileName: string) => {
     const link = document.createElement("a");
     link.href = imageUrl;
-    link.download = `${fileName}.png`;
+    link.download = `ai-image-${fileName}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -94,6 +97,7 @@ export default function ImageGenPage() {
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="A futuristic city with purple neon lights and flying cars..."
                   className="bg-white/5 border-white/10 py-6 h-14 focus-visible:ring-primary"
+                  onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
                 />
               </div>
             </div>
@@ -147,25 +151,24 @@ export default function ImageGenPage() {
           </div>
         )}
 
-        {loading && history.length === 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {loading && (
             <Card className="glass animate-pulse border-white/10 overflow-hidden aspect-square flex items-center justify-center">
               <div className="text-center">
                 <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary mb-2" />
                 <span className="text-sm text-muted-foreground">Creating masterpiece...</span>
               </div>
             </Card>
-          </div>
-        )}
+          )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {history.map((item) => (
             <div key={item.id} className="group relative glass border-white/10 rounded-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-              <div className="aspect-square relative overflow-hidden">
+              <div className="aspect-square relative overflow-hidden bg-card">
                 <Image 
                   src={item.url} 
                   alt={item.prompt} 
                   fill 
+                  unoptimized
                   className="object-cover transition-transform group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
