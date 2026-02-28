@@ -3,18 +3,18 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Zap, Mail, Lock, Github, Chrome, Loader2 } from "lucide-react";
+import { Zap, Mail, Lock, Chrome, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth, useFirestore } from "@/firebase";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
-  const { auth } = useAuth();
+  const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
@@ -30,18 +30,20 @@ export default function LoginPage() {
       const user = result.user;
 
       // Sync user to Firestore for Admin Panel tracking
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
+      if (db) {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
 
-      if (!userSnap.exists()) {
-        await setDoc(userRef, {
-          email: user.email,
-          displayName: user.displayName,
-          plan: "Starter",
-          credits: 1000,
-          status: "Active",
-          joinedAt: new Date().toISOString(),
-        });
+        if (!userSnap.exists()) {
+          await setDoc(userRef, {
+            email: user.email,
+            displayName: user.displayName,
+            plan: "Starter",
+            credits: 1000,
+            status: "Active",
+            joinedAt: new Date().toISOString(),
+          });
+        }
       }
 
       toast({
@@ -50,6 +52,7 @@ export default function LoginPage() {
       });
       router.push("/dashboard");
     } catch (error: any) {
+      console.error("Google Sign-in Error:", error);
       toast({
         variant: "destructive",
         title: "Sign in failed",
@@ -96,7 +99,7 @@ export default function LoginPage() {
               <Input type="password" placeholder="••••••••" className="pl-10 bg-white/5 border-white/10" disabled />
             </div>
           </div>
-          <Button className="w-full bg-primary hover:bg-primary/90 mt-4 h-11 text-base" disabled>
+          <Button className="w-full bg-primary hover:bg-primary/90 mt-4 h-11 text-base" disabled title="Email sign-in is coming soon">
             Sign In with Email (Disabled)
           </Button>
           

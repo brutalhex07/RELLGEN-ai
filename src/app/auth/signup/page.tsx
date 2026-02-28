@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Zap, Mail, Lock, User, Github, Chrome, Loader2 } from "lucide-react";
+import { Zap, Mail, Lock, User, Chrome, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SignupPage() {
-  const { auth } = useAuth();
+  const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
@@ -30,18 +30,20 @@ export default function SignupPage() {
       const user = result.user;
 
       // Ensure user profile exists in Firestore
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
+      if (db) {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
 
-      if (!userSnap.exists()) {
-        await setDoc(userRef, {
-          email: user.email,
-          displayName: user.displayName,
-          plan: "Starter",
-          credits: 1000,
-          status: "Active",
-          joinedAt: new Date().toISOString(),
-        });
+        if (!userSnap.exists()) {
+          await setDoc(userRef, {
+            email: user.email,
+            displayName: user.displayName,
+            plan: "Starter",
+            credits: 1000,
+            status: "Active",
+            joinedAt: new Date().toISOString(),
+          });
+        }
       }
 
       toast({
@@ -50,6 +52,7 @@ export default function SignupPage() {
       });
       router.push("/dashboard");
     } catch (error: any) {
+      console.error("Google Sign-up Error:", error);
       toast({
         variant: "destructive",
         title: "Signup failed",
@@ -100,7 +103,7 @@ export default function SignupPage() {
               <Input type="password" placeholder="••••••••" className="pl-10 bg-white/5 border-white/10" disabled />
             </div>
           </div>
-          <Button className="w-full bg-primary hover:bg-primary/90 mt-4 h-11 text-base" disabled>
+          <Button className="w-full bg-primary hover:bg-primary/90 mt-4 h-11 text-base" disabled title="Email sign-up is coming soon">
             Start Creating Free (Email Disabled)
           </Button>
           
