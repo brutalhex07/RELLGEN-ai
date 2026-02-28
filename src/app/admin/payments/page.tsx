@@ -1,15 +1,14 @@
 
 "use client";
 
+import { useMemo } from "react";
 import { 
   DollarSign, 
   Search, 
   Download, 
   CreditCard, 
-  Clock, 
   CheckCircle2, 
   XCircle,
-  TrendingUp,
   ArrowUpRight,
   MoreVertical,
   Calendar
@@ -27,16 +26,23 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
-const mockTransactions: any[] = [];
+import { useCollection, useFirestore } from "@/firebase";
+import { collection } from "firebase/firestore";
 
 export default function AdminPaymentsPage() {
+  const db = useFirestore();
+  const transactionsRef = useMemo(() => (db ? collection(db, "transactions") : null), [db]);
+  const { data: transactions, loading } = useCollection(transactionsRef);
+
+  const totalNet = transactions?.reduce((sum, t) => sum + (t.status === 'Completed' ? t.amount : 0), 0) || 0;
+  const activeSubs = transactions?.filter(t => t.status === 'Completed' && t.plan !== 'Starter').length || 0;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold font-headline tracking-tight text-white">Revenue & Billing</h1>
-          <p className="text-muted-foreground">Monitor transactions, subscriptions, and financial logs.</p>
+          <p className="text-muted-foreground">Monitoring real-time transactions from Firestore.</p>
         </div>
         <Button className="bg-accent hover:bg-accent/90 gap-2 h-11 shadow-lg shadow-accent/20">
           <Download className="h-4 w-4" /> Export Financial Report
@@ -46,20 +52,20 @@ export default function AdminPaymentsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <RevenueCard 
           title="Monthly Recurring Revenue" 
-          value="$0" 
-          change="0%" 
-          description="MRR growth this month"
+          value={`$${(totalNet / 12).toFixed(2)}`} 
+          change="Estimated" 
+          description="Average MRR based on total"
         />
         <RevenueCard 
           title="Total Net Revenue" 
-          value="$0" 
-          change="0%" 
+          value={`$${totalNet.toFixed(2)}`} 
+          change="Live" 
           description="Platform lifetime earnings"
         />
         <RevenueCard 
           title="Active Subscriptions" 
-          value="0" 
-          change="0" 
+          value={activeSubs.toString()} 
+          change="Real-time" 
           description="Paying customers"
         />
       </div>
@@ -80,7 +86,9 @@ export default function AdminPaymentsPage() {
       </div>
 
       <Card className="glass border-white/5 overflow-hidden">
-        {mockTransactions.length > 0 ? (
+        {loading ? (
+          <div className="p-12 text-center text-muted-foreground">Loading transactions...</div>
+        ) : transactions && transactions.length > 0 ? (
           <Table>
             <TableHeader className="bg-white/5">
               <TableRow className="border-white/5">
@@ -94,17 +102,19 @@ export default function AdminPaymentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockTransactions.map((txn) => (
+              {transactions.map((txn) => (
                 <TableRow key={txn.id} className="border-white/5 hover:bg-white/5 transition-colors">
                   <TableCell className="font-mono text-xs font-bold text-accent">{txn.id}</TableCell>
-                  <TableCell className="text-sm font-medium text-white">{txn.user}</TableCell>
-                  <TableCell className="font-bold text-white">{txn.amount}</TableCell>
+                  <TableCell className="text-sm font-medium text-white">{txn.userEmail || 'Unknown'}</TableCell>
+                  <TableCell className="font-bold text-white">${txn.amount}</TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="bg-white/5 border-none font-bold text-[10px] uppercase">
                       {txn.plan}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground font-mono">{txn.date}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground font-mono">
+                    {txn.timestamp ? new Date(txn.timestamp).toLocaleDateString() : 'N/A'}
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       {txn.status === 'Completed' ? (
@@ -135,7 +145,7 @@ export default function AdminPaymentsPage() {
               <CreditCard className="h-6 w-6 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-bold text-white mb-2">No transactions recorded</h3>
-            <p className="text-muted-foreground text-sm max-w-xs mx-auto">Financial records have been reset. Sales data will populate here after the next purchase.</p>
+            <p className="text-muted-foreground text-sm max-w-xs mx-auto">Sales data will populate here after the next purchase recorded in Firestore.</p>
           </div>
         )}
       </Card>

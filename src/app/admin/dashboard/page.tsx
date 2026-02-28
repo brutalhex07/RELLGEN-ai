@@ -1,17 +1,16 @@
 
 "use client";
 
+import { useMemo } from "react";
 import { 
   Users, 
   ImageIcon, 
   MessageSquare, 
-  TrendingUp, 
-  DollarSign, 
   Activity,
+  DollarSign, 
+  Zap,
   ArrowUpRight,
-  ArrowDownRight,
-  Calendar,
-  Zap
+  ArrowDownRight
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
@@ -29,39 +28,53 @@ import {
   Bar
 } from "recharts";
 import { cn } from "@/lib/utils";
-
-const revenueData = [
-  { month: "Jan", revenue: 0, users: 0 },
-  { month: "Feb", revenue: 0, users: 0 },
-  { month: "Mar", revenue: 0, users: 0 },
-  { month: "Apr", revenue: 0, users: 0 },
-  { month: "May", revenue: 0, users: 0 },
-  { month: "Jun", revenue: 0, users: 0 },
-];
-
-const usageData = [
-  { day: "Mon", chat: 0, image: 0 },
-  { day: "Tue", chat: 0, image: 0 },
-  { day: "Wed", chat: 0, image: 0 },
-  { day: "Thu", chat: 0, image: 0 },
-  { day: "Fri", chat: 0, image: 0 },
-  { day: "Sat", chat: 0, image: 0 },
-  { day: "Sun", chat: 0, image: 0 },
-];
+import { useCollection, useFirestore } from "@/firebase";
+import { collection } from "firebase/firestore";
 
 export default function AdminDashboardPage() {
+  const db = useFirestore();
+
+  const usersRef = useMemo(() => (db ? collection(db, "users") : null), [db]);
+  const transactionsRef = useMemo(() => (db ? collection(db, "transactions") : null), [db]);
+  const usageRef = useMemo(() => (db ? collection(db, "usage_logs") : null), [db]);
+
+  const { data: users } = useCollection(usersRef);
+  const { data: transactions } = useCollection(transactionsRef);
+  const { data: usageLogs } = useCollection(usageRef);
+
+  const totalRevenue = transactions?.reduce((sum, t) => sum + (t.status === 'Completed' ? t.amount : 0), 0) || 0;
+  const totalTasks = usageLogs?.length || 0;
+  const activeToday = users?.filter(u => u.status === 'Active').length || 0;
+
+  // Chart Data preparation
+  const usageData = [
+    { day: "Mon", chat: usageLogs?.filter(l => l.type === 'chat').length || 0, image: usageLogs?.filter(l => l.type === 'image').length || 0 },
+    { day: "Tue", chat: 0, image: 0 },
+    { day: "Wed", chat: 0, image: 0 },
+    { day: "Thu", chat: 0, image: 0 },
+    { day: "Fri", chat: 0, image: 0 },
+    { day: "Sat", chat: 0, image: 0 },
+    { day: "Sun", chat: 0, image: 0 },
+  ];
+
+  const revenueData = [
+    { month: "Jan", revenue: totalRevenue },
+    { month: "Feb", revenue: 0 },
+    { month: "Mar", revenue: 0 },
+  ];
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold font-headline tracking-tight text-white">System Overview</h1>
           <p className="text-muted-foreground text-sm flex items-center gap-2">
-            <Activity className="h-3 w-3 text-emerald-500" /> Metrics have been reset. Monitoring fresh data.
+            <Activity className="h-3 w-3 text-emerald-500" /> Real-time metrics connected to Firestore.
           </p>
         </div>
         <div className="flex items-center gap-2 bg-card/50 border border-white/5 p-1 rounded-xl glass">
-          <div className="px-3 py-1 text-xs font-bold text-accent bg-accent/10 rounded-lg">IDLE</div>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-widest px-2">Last reset: Just now</span>
+          <div className="px-3 py-1 text-xs font-bold text-accent bg-accent/10 rounded-lg">LIVE</div>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-widest px-2">Syncing with database</span>
         </div>
       </div>
 
@@ -69,34 +82,34 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <AdminStatCard 
           title="Total Users" 
-          value="0" 
-          change="0%" 
+          value={users?.length.toString() || "0"} 
+          change="Live" 
           trend="up"
           description="Total registered accounts"
           icon={<Users className="h-4 w-4" />}
         />
         <AdminStatCard 
-          title="Active Today" 
-          value="0" 
-          change="0%" 
+          title="Active Users" 
+          value={activeToday.toString()} 
+          change="Current" 
           trend="up"
-          description="Users online in last 24h"
+          description="Users with Active status"
           icon={<Activity className="h-4 w-4" />}
         />
         <AdminStatCard 
-          title="Revenue Today" 
-          value="$0.00" 
-          change="0%" 
+          title="Total Revenue" 
+          value={`$${totalRevenue.toFixed(2)}`} 
+          change="Accumulated" 
           trend="up"
-          description="Successful transactions"
+          description="All completed transactions"
           icon={<DollarSign className="h-4 w-4" />}
         />
         <AdminStatCard 
           title="AI Tasks" 
-          value="0" 
-          change="0%" 
+          value={totalTasks.toString()} 
+          change="Total" 
           trend="up"
-          description="Total generations & chats"
+          description="Generations & chats logged"
           icon={<Zap className="h-4 w-4" />}
         />
       </div>
@@ -106,12 +119,11 @@ export default function AdminDashboardPage() {
         <Card className="lg:col-span-2 glass border-white/5 bg-card/30">
           <CardHeader>
             <CardTitle className="text-lg text-white">Revenue Growth</CardTitle>
-            <CardDescription>Monthly platform earnings (USD)</CardDescription>
+            <CardDescription>Real-time platform earnings (USD)</CardDescription>
           </CardHeader>
           <CardContent className="h-[350px]">
             <ChartContainer config={{ 
-              revenue: { label: "Revenue", color: "hsl(var(--accent))" },
-              users: { label: "New Users", color: "hsl(var(--primary))" } 
+              revenue: { label: "Revenue", color: "hsl(var(--accent))" }
             }}>
               <AreaChart data={revenueData}>
                 <defs>
@@ -150,7 +162,7 @@ export default function AdminDashboardPage() {
         <Card className="glass border-white/5 bg-card/30">
           <CardHeader>
             <CardTitle className="text-lg text-white">AI Resource Usage</CardTitle>
-            <CardDescription>Daily Chat vs Image task volume</CardDescription>
+            <CardDescription>Live Chat vs Image task volume</CardDescription>
           </CardHeader>
           <CardContent className="h-[350px]">
             <ChartContainer config={{ 

@@ -1,18 +1,15 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { 
   Search, 
   MoreHorizontal, 
   UserPlus, 
   Shield, 
-  Mail, 
-  Calendar,
   Filter,
   CheckCircle2,
   XCircle,
-  MoreVertical,
   Edit,
   Trash2,
   Unlock,
@@ -41,18 +38,40 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-
-const mockUsers: any[] = [];
+import { useCollection, useFirestore } from "@/firebase";
+import { collection, updateDoc, doc, deleteDoc } from "firebase/firestore";
 
 export default function UserManagementPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const db = useFirestore();
+
+  const usersRef = useMemo(() => (db ? collection(db, "users") : null), [db]);
+  const { data: users, loading } = useCollection(usersRef);
+
+  const filteredUsers = users?.filter(u => 
+    u.email?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    u.displayName?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const toggleUserStatus = async (userId: string, currentStatus: string) => {
+    if (!db) return;
+    const userDoc = doc(db, "users", userId);
+    await updateDoc(userDoc, {
+      status: currentStatus === 'Active' ? 'Blocked' : 'Active'
+    });
+  };
+
+  const removeUser = async (userId: string) => {
+    if (!db || !confirm("Are you sure you want to delete this user?")) return;
+    await deleteDoc(doc(db, "users", userId));
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold font-headline tracking-tight text-white">User Management</h1>
-          <p className="text-muted-foreground">Manage accounts, plans, and credit distributions.</p>
+          <p className="text-muted-foreground">Manage real accounts synced from Firestore.</p>
         </div>
         <Button className="bg-accent hover:bg-accent/90 gap-2 shadow-lg shadow-accent/20">
           <UserPlus className="h-4 w-4" /> Add New User
@@ -80,7 +99,9 @@ export default function UserManagementPage() {
       </div>
 
       <Card className="glass border-white/5 overflow-hidden">
-        {mockUsers.length > 0 ? (
+        {loading ? (
+          <div className="p-12 text-center text-muted-foreground">Loading users...</div>
+        ) : filteredUsers && filteredUsers.length > 0 ? (
           <Table>
             <TableHeader className="bg-white/5">
               <TableRow className="border-white/5">
@@ -93,16 +114,16 @@ export default function UserManagementPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockUsers.map((user) => (
+              {filteredUsers.map((user) => (
                 <TableRow key={user.id} className="border-white/5 hover:bg-white/5 transition-colors group">
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10 border border-white/10">
                         <AvatarImage src={`https://picsum.photos/seed/${user.id}/100/100`} />
-                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                        <AvatarFallback>{user.displayName?.charAt(0) || 'U'}</AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col">
-                        <span className="font-bold text-sm text-white">{user.name}</span>
+                        <span className="font-bold text-sm text-white">{user.displayName || 'Anonymous'}</span>
                         <span className="text-xs text-muted-foreground">{user.email}</span>
                       </div>
                     </div>
@@ -118,7 +139,7 @@ export default function UserManagementPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="text-sm font-mono font-bold tracking-tight text-white">{user.credits.toLocaleString()}</span>
+                      <span className="text-sm font-mono font-bold tracking-tight text-white">{user.credits?.toLocaleString() || '0'}</span>
                       <span className="text-[10px] text-muted-foreground uppercase">Tokens</span>
                     </div>
                   </TableCell>
@@ -138,7 +159,7 @@ export default function UserManagementPage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground font-mono">
-                    {user.joined}
+                    {user.joinedAt ? new Date(user.joinedAt).toLocaleDateString() : 'N/A'}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
@@ -161,15 +182,24 @@ export default function UserManagementPage() {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-white/10" />
                         {user.status === 'Active' ? (
-                          <DropdownMenuItem className="gap-2 text-rose-500 focus:text-rose-500 cursor-pointer">
+                          <DropdownMenuItem 
+                            onClick={() => toggleUserStatus(user.id, user.status)}
+                            className="gap-2 text-rose-500 focus:text-rose-500 cursor-pointer"
+                          >
                             <Lock className="h-4 w-4" /> Block User
                           </DropdownMenuItem>
                         ) : (
-                          <DropdownMenuItem className="gap-2 text-emerald-500 focus:text-emerald-500 cursor-pointer">
+                          <DropdownMenuItem 
+                            onClick={() => toggleUserStatus(user.id, user.status)}
+                            className="gap-2 text-emerald-500 focus:text-emerald-500 cursor-pointer"
+                          >
                             <Unlock className="h-4 w-4" /> Unblock User
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem className="gap-2 text-rose-600 focus:text-rose-600 cursor-pointer">
+                        <DropdownMenuItem 
+                          onClick={() => removeUser(user.id)}
+                          className="gap-2 text-rose-600 focus:text-rose-600 cursor-pointer"
+                        >
                           <Trash2 className="h-4 w-4" /> Delete Account
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -185,7 +215,7 @@ export default function UserManagementPage() {
               <Zap className="h-6 w-6 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-bold text-white mb-2">No users found</h3>
-            <p className="text-muted-foreground text-sm max-w-xs mx-auto">All user accounts have been reset. New accounts will appear here as they register.</p>
+            <p className="text-muted-foreground text-sm max-w-xs mx-auto">Database is empty. Register new users to see them here.</p>
           </div>
         )}
       </Card>

@@ -1,0 +1,67 @@
+
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Stores user account details, subscription plan, and AI credits.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "plan": { "type": "string", "enum": ["Starter", "Pro", "Enterprise"] },
+        "credits": { "type": "number", "description": "Current available AI tokens" },
+        "status": { "type": "string", "enum": ["Active", "Blocked"] },
+        "joinedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "plan", "credits", "status"]
+    },
+    "Transaction": {
+      "title": "Payment Transaction",
+      "description": "Records of revenue generated from plan upgrades or credit purchases.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string" },
+        "plan": { "type": "string" },
+        "status": { "type": "string", "enum": ["Completed", "Failed", "Refunded"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "amount", "status", "timestamp"]
+    },
+    "UsageLog": {
+      "title": "AI Usage Log",
+      "description": "Tracks individual AI generation tasks for monitoring and billing.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["chat", "image"] },
+        "tokensUsed": { "type": "number" },
+        "modelUsed": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "type", "tokensUsed", "timestamp"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com", "password"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Individual user profiles and subscription data."
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Platform-wide financial transactions."
+    },
+    "/usage_logs/{logId}": {
+      "schema": "UsageLog",
+      "description": "Detailed logs of AI generation activities."
+    }
+  }
+}
