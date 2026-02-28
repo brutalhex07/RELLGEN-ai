@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Zap } from "lucide-react";
+import { Zap, ShieldCheck } from "lucide-react";
 
 export function Header() {
   return (
@@ -17,8 +17,10 @@ export function Header() {
         </Link>
         <nav className="hidden md:flex items-center gap-8">
           <Link href="#features" className="text-sm font-medium hover:text-primary transition-colors">Features</Link>
-          <Link href="#pricing" className="text-sm font-medium hover:text-primary transition-colors">Pricing</Link>
           <Link href="/dashboard" className="text-sm font-medium hover:text-primary transition-colors">Dashboard</Link>
+          <Link href="/admin/dashboard" className="text-sm font-bold text-accent hover:opacity-80 transition-opacity flex items-center gap-1">
+            <ShieldCheck className="h-4 w-4" /> Admin
+          </Link>
         </nav>
         <div className="flex items-center gap-4">
           <Link href="/auth/login">
