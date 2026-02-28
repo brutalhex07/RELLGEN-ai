@@ -31,22 +31,22 @@ import {
 import { cn } from "@/lib/utils";
 
 const revenueData = [
-  { month: "Jan", revenue: 4500, users: 120 },
-  { month: "Feb", revenue: 5200, users: 150 },
-  { month: "Mar", revenue: 4800, users: 180 },
-  { month: "Apr", revenue: 6100, users: 210 },
-  { month: "May", revenue: 7500, users: 250 },
-  { month: "Jun", revenue: 8900, users: 300 },
+  { month: "Jan", revenue: 0, users: 0 },
+  { month: "Feb", revenue: 0, users: 0 },
+  { month: "Mar", revenue: 0, users: 0 },
+  { month: "Apr", revenue: 0, users: 0 },
+  { month: "May", revenue: 0, users: 0 },
+  { month: "Jun", revenue: 0, users: 0 },
 ];
 
 const usageData = [
-  { day: "Mon", chat: 400, image: 240 },
-  { day: "Tue", chat: 300, image: 139 },
-  { day: "Wed", chat: 200, image: 980 },
-  { day: "Thu", chat: 278, image: 390 },
-  { day: "Fri", chat: 189, image: 480 },
-  { day: "Sat", chat: 239, image: 380 },
-  { day: "Sun", chat: 349, image: 430 },
+  { day: "Mon", chat: 0, image: 0 },
+  { day: "Tue", chat: 0, image: 0 },
+  { day: "Wed", chat: 0, image: 0 },
+  { day: "Thu", chat: 0, image: 0 },
+  { day: "Fri", chat: 0, image: 0 },
+  { day: "Sat", chat: 0, image: 0 },
+  { day: "Sun", chat: 0, image: 0 },
 ];
 
 export default function AdminDashboardPage() {
@@ -54,14 +54,14 @@ export default function AdminDashboardPage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold font-headline tracking-tight">System Overview</h1>
+          <h1 className="text-3xl font-bold font-headline tracking-tight text-white">System Overview</h1>
           <p className="text-muted-foreground text-sm flex items-center gap-2">
-            <Activity className="h-3 w-3 text-emerald-500" /> Real-time platform analytics and usage metrics.
+            <Activity className="h-3 w-3 text-emerald-500" /> Metrics have been reset. Monitoring fresh data.
           </p>
         </div>
         <div className="flex items-center gap-2 bg-card/50 border border-white/5 p-1 rounded-xl glass">
-          <div className="px-3 py-1 text-xs font-bold text-accent bg-accent/10 rounded-lg">LIVE</div>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-widest px-2">Last updated: Just now</span>
+          <div className="px-3 py-1 text-xs font-bold text-accent bg-accent/10 rounded-lg">IDLE</div>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-widest px-2">Last reset: Just now</span>
         </div>
       </div>
 
@@ -69,33 +69,33 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <AdminStatCard 
           title="Total Users" 
-          value="2,842" 
-          change="+18%" 
+          value="0" 
+          change="0%" 
           trend="up"
           description="Total registered accounts"
           icon={<Users className="h-4 w-4" />}
         />
         <AdminStatCard 
           title="Active Today" 
-          value="452" 
-          change="+5%" 
+          value="0" 
+          change="0%" 
           trend="up"
           description="Users online in last 24h"
           icon={<Activity className="h-4 w-4" />}
         />
         <AdminStatCard 
           title="Revenue Today" 
-          value="$1,240.50" 
-          change="+12.5%" 
+          value="$0.00" 
+          change="0%" 
           trend="up"
           description="Successful transactions"
           icon={<DollarSign className="h-4 w-4" />}
         />
         <AdminStatCard 
           title="AI Tasks" 
-          value="15,200" 
-          change="-2%" 
-          trend="down"
+          value="0" 
+          change="0%" 
+          trend="up"
           description="Total generations & chats"
           icon={<Zap className="h-4 w-4" />}
         />
@@ -105,7 +105,7 @@ export default function AdminDashboardPage() {
         {/* Main Revenue Chart */}
         <Card className="lg:col-span-2 glass border-white/5 bg-card/30">
           <CardHeader>
-            <CardTitle className="text-lg">Revenue Growth</CardTitle>
+            <CardTitle className="text-lg text-white">Revenue Growth</CardTitle>
             <CardDescription>Monthly platform earnings (USD)</CardDescription>
           </CardHeader>
           <CardContent className="h-[350px]">
@@ -149,7 +149,7 @@ export default function AdminDashboardPage() {
         {/* AI Usage Distribution */}
         <Card className="glass border-white/5 bg-card/30">
           <CardHeader>
-            <CardTitle className="text-lg">AI Resource Usage</CardTitle>
+            <CardTitle className="text-lg text-white">AI Resource Usage</CardTitle>
             <CardDescription>Daily Chat vs Image task volume</CardDescription>
           </CardHeader>
           <CardContent className="h-[350px]">
@@ -192,7 +192,7 @@ function AdminStatCard({ title, value, change, trend, description, icon }: any) 
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-3xl font-bold font-headline">{value}</div>
+        <div className="text-3xl font-bold font-headline text-white">{value}</div>
         <div className="flex items-center gap-2 mt-1">
           <div className={cn(
             "flex items-center text-xs font-bold px-1.5 py-0.5 rounded",

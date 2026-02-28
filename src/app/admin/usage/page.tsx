@@ -24,13 +24,13 @@ import {
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 
 const apiLatencyData = [
-  { time: "00:00", latency: 240 },
-  { time: "04:00", latency: 180 },
-  { time: "08:00", latency: 320 },
-  { time: "12:00", latency: 450 },
-  { time: "16:00", latency: 380 },
-  { time: "20:00", latency: 210 },
-  { time: "23:59", latency: 190 },
+  { time: "00:00", latency: 0 },
+  { time: "04:00", latency: 0 },
+  { time: "08:00", latency: 0 },
+  { time: "12:00", latency: 0 },
+  { time: "16:00", latency: 0 },
+  { time: "20:00", latency: 0 },
+  { time: "23:59", latency: 0 },
 ];
 
 export default function AdminUsagePage() {
@@ -38,10 +38,10 @@ export default function AdminUsagePage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold font-headline tracking-tight">AI & Infrastructure Usage</h1>
+          <h1 className="text-3xl font-bold font-headline tracking-tight text-white">AI & Infrastructure Usage</h1>
           <p className="text-muted-foreground">Monitor API health, latency, and token consumption.</p>
         </div>
-        <Button variant="outline" className="gap-2 border-white/10 h-11 bg-white/5">
+        <Button variant="outline" className="gap-2 border-white/10 h-11 bg-white/5 text-white">
           <RefreshCcw className="h-4 w-4" /> Refresh Stats
         </Button>
       </div>
@@ -52,12 +52,12 @@ export default function AdminUsagePage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg">Global API Latency</CardTitle>
+                <CardTitle className="text-lg text-white">Global API Latency</CardTitle>
                 <CardDescription>Response time in milliseconds (ms)</CardDescription>
               </div>
               <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">System Healthy</span>
+                <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">System Idle</span>
               </div>
             </div>
           </CardHeader>
@@ -94,23 +94,23 @@ export default function AdminUsagePage() {
         <div className="space-y-6">
           <UsageMetricCard 
             title="Chat Tokens (24h)" 
-            current="12.4M" 
+            current="0" 
             limit="20.0M" 
-            percent={62} 
+            percent={0} 
             icon={<Bot className="h-4 w-4" />}
           />
           <UsageMetricCard 
             title="Image Tasks (24h)" 
-            current="8,420" 
+            current="0" 
             limit="15,000" 
-            percent={56} 
+            percent={0} 
             icon={<ImageIcon className="h-4 w-4" />}
           />
           <UsageMetricCard 
             title="Compute Load" 
-            current="42%" 
+            current="0%" 
             limit="100%" 
-            percent={42} 
+            percent={0} 
             icon={<Cpu className="h-4 w-4" />}
           />
         </div>
@@ -127,11 +127,11 @@ function UsageMetricCard({ title, current, limit, percent, icon }: any) {
           <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest">
             {icon} {title}
           </div>
-          <span className="text-xs font-mono font-bold">{percent}%</span>
+          <span className="text-xs font-mono font-bold text-white">{percent}%</span>
         </div>
         <Progress value={percent} className="h-2 bg-white/5" />
         <div className="flex justify-between items-baseline">
-          <span className="text-lg font-bold font-headline">{current}</span>
+          <span className="text-lg font-bold font-headline text-white">{current}</span>
           <span className="text-[10px] text-muted-foreground uppercase">Quota: {limit}</span>
         </div>
       </CardContent>
