@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -11,7 +12,8 @@ import {
   Settings, 
   LogOut,
   LayoutGrid,
-  PlusCircle
+  PlusCircle,
+  ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -62,6 +64,13 @@ export function NavSidebar() {
       </div>
 
       <div className="mt-auto p-4 border-t border-white/5">
+        <Link href="/admin/dashboard">
+          <Button variant="ghost" className="w-full justify-start gap-2 mb-4 text-accent hover:bg-accent/10 hover:text-accent font-bold text-xs uppercase tracking-wider">
+            <ShieldCheck className="h-4 w-4" />
+            Admin Panel
+          </Button>
+        </Link>
+
         <div className="flex items-center gap-3 px-3 py-4 rounded-xl bg-primary/5 mb-4">
           <Avatar className="h-10 w-10 border border-primary/20">
             <AvatarImage src="https://picsum.photos/seed/user123/100/100" />
