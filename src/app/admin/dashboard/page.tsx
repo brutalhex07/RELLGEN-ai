@@ -10,7 +10,8 @@ import {
   Activity,
   ArrowUpRight,
   ArrowDownRight,
-  Calendar
+  Calendar,
+  Zap
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
@@ -21,7 +22,6 @@ import {
 import { 
   Area, 
   AreaChart, 
-  ResponsiveContainer, 
   XAxis, 
   YAxis, 
   CartesianGrid,
