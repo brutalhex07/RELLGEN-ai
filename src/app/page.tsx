@@ -36,27 +36,25 @@ export default function Home() {
             Chat with powerful models, generate stunning visuals, and manage your entire AI workflow in one sleek, unified platform.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/auth/signup">
-              <Button size="lg" className="h-12 px-8 text-base bg-primary hover:bg-primary/90">
-                Get Started for Free
-              </Button>
-            </Link>
-            <Link href="#features">
-              <Button size="lg" variant="outline" className="h-12 px-8 text-base border-white/10 hover:bg-white/5">
-                Explore Features
-              </Button>
-            </Link>
+            <Button size="lg" className="h-12 px-8 text-base bg-primary hover:bg-primary/90" asChild>
+              <Link href="/auth/signup">Get Started for Free</Link>
+            </Button>
+            <Button size="lg" variant="outline" className="h-12 px-8 text-base border-white/10 hover:bg-white/5" asChild>
+              <Link href="/#features">Explore Features</Link>
+            </Button>
           </div>
 
-          <div className="mt-20 relative max-w-5xl mx-auto rounded-xl border border-white/10 bg-card/50 backdrop-blur-sm p-2 shadow-2xl">
+          <div className="mt-20 relative max-w-5xl mx-auto rounded-xl border border-white/10 bg-card/50 backdrop-blur-sm p-2 shadow-2xl overflow-hidden group">
             <Image 
               src={heroImg.imageUrl}
               alt={heroImg.description}
               width={1200}
               height={800}
-              className="rounded-lg w-full"
+              className="rounded-lg w-full transition-transform duration-700 group-hover:scale-[1.02]"
               data-ai-hint={heroImg.imageHint}
+              priority
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent pointer-events-none" />
           </div>
         </div>
       </section>
@@ -111,11 +109,9 @@ export default function Home() {
             <div className="relative z-10">
               <h2 className="text-4xl md:text-5xl font-bold mb-6 font-headline tracking-tight">Ready to unlock your AI potential?</h2>
               <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto">Join thousands of creators who are building the future with AI1 Studio today.</p>
-              <Link href="/auth/signup">
-                <Button size="lg" className="h-12 px-10 text-base bg-white text-black hover:bg-white/90">
-                  Start Creating Now
-                </Button>
-              </Link>
+              <Button size="lg" className="h-12 px-10 text-base bg-white text-black hover:bg-white/90" asChild>
+                <Link href="/auth/signup">Start Creating Now</Link>
+              </Button>
             </div>
           </div>
         </div>
