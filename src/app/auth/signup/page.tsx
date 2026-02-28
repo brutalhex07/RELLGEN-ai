@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Zap, Mail, Lock, User, Chrome, Loader2 } from "lucide-react";
+import { Zap, Mail, Lock, User, Chrome, Loader2, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { useAuth, useFirestore } from "@/firebase";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function SignupPage() {
   const auth = useAuth();
@@ -19,17 +20,24 @@ export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleGoogleSignUp = async () => {
     if (loading) return;
     setLoading(true);
+    setError(null);
+
     const provider = new GoogleAuthProvider();
     
     try {
+      // Check if we are using placeholder keys
+      if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY === "placeholder-api-key") {
+        throw new Error("Firebase configuration is missing. Please add your credentials to the .env file.");
+      }
+
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Ensure user profile exists in Firestore
       if (db) {
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
@@ -51,16 +59,20 @@ export default function SignupPage() {
         description: `Welcome to AI1 Studio, ${user.displayName}`,
       });
       router.push("/dashboard");
-    } catch (error: any) {
-      console.error("Google Sign-up Error:", error);
-      toast({
-        variant: "destructive",
-        title: "Signup failed",
-        description: error.message || "Could not complete Google signup.",
-      });
+    } catch (err: any) {
+      console.error("Signup Error:", err);
+      setError(err.message || "Could not complete Google signup.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const bypassForDemo = () => {
+    toast({
+      title: "Demo Mode Active",
+      description: "Bypassing auth for preview...",
+    });
+    router.push("/dashboard");
   };
 
   return (
@@ -76,31 +88,46 @@ export default function SignupPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/20">
               <Zap className="h-6 w-6 text-primary-foreground" />
             </div>
-            <span className="text-2xl font-bold font-headline tracking-tight">AI1 Studio</span>
+            <span className="text-2xl font-bold font-headline tracking-tight text-white">AI1 Studio</span>
           </Link>
-          <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
+          <CardTitle className="text-2xl font-bold text-white">Create an account</CardTitle>
           <CardDescription>Get started with your 1,000 free tokens today</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 pt-4">
+          {error && (
+            <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Signup Failed</AlertTitle>
+              <AlertDescription className="text-xs">
+                {error}
+                <div className="mt-2">
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] border-destructive/30 hover:bg-destructive/10 text-destructive" onClick={bypassForDemo}>
+                    Bypass for Demo
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="space-y-2">
-            <label className="text-sm font-medium">Full Name</label>
+            <label className="text-sm font-medium text-white">Full Name</label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="John Doe" className="pl-10 bg-white/5 border-white/10" disabled />
+              <Input placeholder="John Doe" className="pl-10 bg-white/5 border-white/10 text-white" disabled />
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Email Address</label>
+            <label className="text-sm font-medium text-white">Email Address</label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="name@example.com" className="pl-10 bg-white/5 border-white/10" disabled />
+              <Input placeholder="name@example.com" className="pl-10 bg-white/5 border-white/10 text-white" disabled />
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Password</label>
+            <label className="text-sm font-medium text-white">Password</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input type="password" placeholder="••••••••" className="pl-10 bg-white/5 border-white/10" disabled />
+              <Input type="password" placeholder="••••••••" className="pl-10 bg-white/5 border-white/10 text-white" disabled />
             </div>
           </div>
           <Button className="w-full bg-primary hover:bg-primary/90 mt-4 h-11 text-base" disabled title="Email sign-up is coming soon">
@@ -119,7 +146,7 @@ export default function SignupPage() {
           <div className="grid grid-cols-1 gap-4">
             <Button 
               variant="outline" 
-              className="border-white/10 gap-2 h-11 bg-white/5 hover:bg-white/10"
+              className="border-white/10 gap-2 h-11 bg-white/5 hover:bg-white/10 text-white"
               onClick={handleGoogleSignUp}
               disabled={loading}
             >
